@@ -13,17 +13,17 @@ publish_to: none
 environment:
   # this project bundles Flutter SDK via `flutter_wrapper`
   # cf https://github.com/passsy/flutter_wrapper
-  flutter: 3.27.4
+  flutter: 3.29.2
   sdk: ">=3.6.0 <4.0.0" # incoherent dartfmt from 3.7.0
 workspace:
   - plugins/aves_magnifier
   - plugins/aves_map
   - plugins/aves_model
   - plugins/aves_report
-  - plugins/aves_report_crashlytics
+  - plugins/aves_report_console
   - plugins/aves_screen_state
   - plugins/aves_services
-  - plugins/aves_services_google
+  - plugins/aves_services_none
   - plugins/aves_ui
   - plugins/aves_utils
   - plugins/aves_video
@@ -44,13 +44,13 @@ dependencies:
   aves_report:
     path: plugins/aves_report
   aves_report_platform:
-    path: plugins/aves_report_crashlytics
+    path: plugins/aves_report_console
   aves_screen_state:
     path: plugins/aves_screen_state
   aves_services:
     path: plugins/aves_services
   aves_services_platform:
-    path: plugins/aves_services_google
+    path: plugins/aves_services_none
   aves_video:
     path: plugins/aves_video
   aves_video_mpv:
@@ -90,10 +90,12 @@ dependencies:
       ref: 6a8c14bceaefd00e703ad517fd2a32fa2081b5de
   flutter_map:
   flutter_markdown_plus:
+  flutter_onnxruntime:
   flutter_staggered_animations:
   get_it:
   gpx:
   http:
+  image:
   intl:
   latlong2:
   leak_tracker:
@@ -128,6 +130,8 @@ dependencies:
     git:
       url: https://github.com/deckerst/aves_streams_channel.git
   synchronized:
+  #transformers:
+  #  path: ../../packages/transformers
   url_launcher:
   # vector_map_tiles v10.0.0-beta requires Flutter v3.37.0 and Impeller
   vector_map_tiles: ^9.0.0-beta.8

@@ -17,6 +17,12 @@ extension ExtraAvesEntryCatalog on AvesEntry {
 
     final beforeAvailableHeapSize = await deviceService.getAvailableHeapSize();
 
+    if (isImage) {
+      var y = await mlService.imgInference(path!);
+      await applyNewFields({EntryFields.embedding: y}, persist: persist);
+    } else if (isVideo) {
+    }
+
     if (isSvg) {
       // vector image sizing is not essential, so we should not spend time for it during loading
       // but it is useful anyway (for aspect ratios etc.) so we size them during cataloguing

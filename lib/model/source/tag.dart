@@ -12,7 +12,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 
 mixin TagMixin on SourceBase {
-  static const commitCountThreshold = 400;
+  static const commitCountThreshold = 0;
   static const _stopCheckCountThreshold = 100;
 
   List<String> sortedTags = List.unmodifiable([]);

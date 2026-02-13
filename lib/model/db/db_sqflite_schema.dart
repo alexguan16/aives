@@ -49,6 +49,7 @@ class SqfliteLocalMediaDbSchema {
             ', durationMillis INTEGER'
             ', trashed INTEGER DEFAULT 0'
             ', origin INTEGER DEFAULT 0'
+            ', embedding BLOB'
             ')');
       case dateTakenTable:
         return db.execute('CREATE TABLE $dateTakenTable('

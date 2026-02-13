@@ -5,6 +5,7 @@ import 'package:aves/model/settings/store_shared_pref.dart';
 import 'package:aves/services/app_profile_service.dart';
 import 'package:aves/services/app_service.dart';
 import 'package:aves/services/device_service.dart';
+import 'package:aves/services/ml_service.dart';
 import 'package:aves/services/media/embedded_data_service.dart';
 import 'package:aves/services/media/media_edit_service.dart';
 import 'package:aves/services/media/media_fetch_service.dart';
@@ -51,6 +52,7 @@ final ReportService reportService = getIt<ReportService>();
 final SecurityService securityService = getIt<SecurityService>();
 final StorageService storageService = getIt<StorageService>();
 final WindowService windowService = getIt<WindowService>();
+final MlService mlService = getIt<MlService>();
 
 void initPlatformServices() {
   getIt.registerLazySingleton<p.Context>(p.Context.new);
@@ -74,4 +76,5 @@ void initPlatformServices() {
   getIt.registerLazySingleton<SecurityService>(PlatformSecurityService.new);
   getIt.registerLazySingleton<StorageService>(PlatformStorageService.new);
   getIt.registerLazySingleton<WindowService>(PlatformWindowService.new);
+  getIt.registerLazySingleton<MlService>(MlService.new);
 }

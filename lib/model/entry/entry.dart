@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:aves/model/entry/cache.dart';
 import 'package:aves/model/entry/dirs.dart';
 import 'package:aves/model/entry/extensions/keys.dart';
+import 'package:aves/model/entry/extensions/props.dart';
 import 'package:aves/model/metadata/address.dart';
 import 'package:aves/model/metadata/catalog.dart';
 import 'package:aves/model/metadata/trash.dart';
@@ -48,6 +49,9 @@ class AvesEntry with AvesEntryBase {
   // synthetic stack of related entries, e.g. burst shots or raw/developed pairs
   List<AvesEntry>? stackedEntries;
 
+  Uint8List? embedding;
+  double similarity = 0;
+
   @override
   final AChangeNotifier visualChangeNotifier = AChangeNotifier();
 
@@ -72,6 +76,7 @@ class AvesEntry with AvesEntryBase {
     required this.trashed,
     required this.origin,
     this.stackedEntries,
+    this.embedding,
   }) : id = id ?? 0 {
     if (kFlutterMemoryAllocationsEnabled) {
       LeakTracking.dispatchObjectCreated(
@@ -117,6 +122,7 @@ class AvesEntry with AvesEntryBase {
       trashed: trashed,
       origin: origin ?? this.origin,
       stackedEntries: stackedEntries ?? this.stackedEntries,
+      embedding: embedding,
     )
       ..catalogMetadata = _catalogMetadata?.copyWith(id: copyEntryId)
       ..addressDetails = _addressDetails?.copyWith(id: copyEntryId)
@@ -145,6 +151,7 @@ class AvesEntry with AvesEntryBase {
       durationMillis: map[EntryFields.durationMillis] as int?,
       trashed: (map[EntryFields.trashed] as int? ?? 0) != 0,
       origin: map[EntryFields.origin] as int,
+      embedding: map[EntryFields.embedding],
     );
   }
 
@@ -167,6 +174,7 @@ class AvesEntry with AvesEntryBase {
       EntryFields.durationMillis: durationMillis,
       EntryFields.trashed: trashed ? 1 : 0,
       EntryFields.origin: origin,
+      EntryFields.embedding: embedding,
     };
   }
 
@@ -185,6 +193,7 @@ class AvesEntry with AvesEntryBase {
       EntryFields.trashed: trashed,
       EntryFields.trashPath: trashDetails?.path,
       EntryFields.origin: origin,
+      EntryFields.embedding: embedding,
     };
   }
 
@@ -444,6 +453,8 @@ class AvesEntry with AvesEntryBase {
     final isFlipped = newFields[EntryFields.isFlipped];
     if (isFlipped is bool) this.isFlipped = isFlipped;
 
+    embedding = newFields[EntryFields.embedding] ?? embedding;
+
     if (persist) {
       await localMediaDb.updateEntry(id, this);
       if (catalogMetadata != null) await localMediaDb.saveCatalogMetadata({catalogMetadata!});
@@ -497,6 +508,16 @@ class AvesEntry with AvesEntryBase {
     if ((!MimeTypes.refersToSameType(oldMimeType, mimeType) && !MimeTypes.isVideo(oldMimeType)) || oldDateModifiedMillis != dateModifiedMillis || oldRotationDegrees != rotationDegrees || oldIsFlipped != isFlipped) {
       await EntryCache.evict(uri, oldMimeType, oldDateModifiedMillis, oldRotationDegrees, oldIsFlipped, isAnimated);
       visualChangeNotifier.notify();
+    }
+  }
+
+  Future<void> calcSimilarity(Completer<Uint8List> txtEmb) async {
+    similarity = 0;
+    if(embedding == null) {
+      return;
+    } else if(isImage) {
+      similarity = mlService.calcImgSimilarity(await txtEmb.future, embedding!);
+    } else if(isVideo) {
     }
   }
 }
