@@ -1,0 +1,9 @@
+{
+  "mlPath": "/storage/emulated/0/model",
+  "txtInputDType": "int64",
+  "visInputDType": "float32",
+  "imgSize": 224,
+  "contextLen": 77,
+  "embeddingLen": 512,
+  "similarity": "cosineSimilarity"
+}

@@ -13,6 +13,7 @@ extension ExtraEntrySortFactorView on EntrySortFactor {
       EntrySortFactor.size => l10n.sortBySize,
       EntrySortFactor.duration => l10n.sortByDuration,
       EntrySortFactor.path => l10n.sortByPath,
+      EntrySortFactor.similarity => l10n.sortByRating,
     };
   }
 
@@ -24,6 +25,7 @@ extension ExtraEntrySortFactorView on EntrySortFactor {
       EntrySortFactor.size => AIcons.size,
       EntrySortFactor.duration => AIcons.duration,
       EntrySortFactor.path => AIcons.path,
+      EntrySortFactor.similarity => AIcons.rating,
     };
   }
 
@@ -36,6 +38,7 @@ extension ExtraEntrySortFactorView on EntrySortFactor {
       EntrySortFactor.size => reverse ? l10n.sortOrderSmallestFirst : l10n.sortOrderLargestFirst,
       EntrySortFactor.duration => reverse ? l10n.sortOrderShortestFirst : l10n.sortOrderLongestFirst,
       EntrySortFactor.path => reverse ? l10n.sortOrderZtoA : l10n.sortOrderAtoZ,
+      EntrySortFactor.similarity => reverse ? l10n.sortOrderLowestFirst : l10n.sortOrderHighestFirst,
     };
   }
 }

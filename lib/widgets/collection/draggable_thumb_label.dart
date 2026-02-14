@@ -70,6 +70,8 @@ class CollectionDraggableThumbLabel extends StatelessWidget {
               if (_showAlbumName(context, entry)) _getAlbumName(context, entry),
               if (entryFilename != null) entryFilename,
             ];
+          case EntrySortFactor.similarity:
+            return [entry.similarity.toString()];
         }
       },
     );

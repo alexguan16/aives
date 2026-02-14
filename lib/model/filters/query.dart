@@ -1,11 +1,14 @@
-import 'package:aves/model/entry/entry.dart';
+import 'package:aves/model/entry/extensions/props.dart';
 import 'package:aves/model/filters/filters.dart';
 import 'package:aves/theme/colors.dart';
 import 'package:aves/theme/icons.dart';
+import 'package:aves/services/common/services.dart';
 import 'package:aves/utils/file_utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
+
+import 'dart:async';
 
 class QueryFilter extends CollectionFilter {
   static const type = 'query';
@@ -14,6 +17,7 @@ class QueryFilter extends CollectionFilter {
 
   final String query;
   final bool colorful, live;
+  late final bool aiSearch;
   late final EntryPredicate _test;
 
   @override
@@ -38,10 +42,12 @@ class QueryFilter extends CollectionFilter {
 
     final test = fieldTest(upQuery);
     if (test != null) {
+      aiSearch = false;
       _test = test;
       return;
     }
 
+    /*
     // allow NOT queries starting with `-`
     final not = upQuery.startsWith('-');
     if (not) {
@@ -53,10 +59,23 @@ class QueryFilter extends CollectionFilter {
     if (matches.length == 1) {
       upQuery = matches.first.group(1)!;
     }
+    */
 
+    aiSearch = true;
+    final txtEmbedding = Completer<Uint8List>();
+    txtEmbedding.complete(mlService.txtInference(upQuery.trim()));
+
+    _test = (entry) {
+      if(!entry.isImage && !entry.isVideo) return false;
+      entry.calcSimilarity(txtEmbedding);
+      return true;
+    };
+
+    /*
     // default to title search
     bool testTitle(AvesEntry entry) => entry.bestTitle?.toUpperCase().contains(upQuery) == true;
     _test = not ? (entry) => !testTitle(entry) : testTitle;
+    */
   }
 
   factory QueryFilter.fromMap(Map<String, dynamic> json) {

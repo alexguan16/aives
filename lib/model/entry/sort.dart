@@ -49,4 +49,8 @@ class AvesEntrySort {
   static int compareByPath(AvesEntry a, AvesEntry b) {
     return compareAsciiUpperCase(a.path ?? '', b.path ?? '');
   }
+
+  static int compareBySimilarity(AvesEntry a, AvesEntry b) {
+    return b.similarity.compareTo(a.similarity);
+  }
 }

@@ -1,25 +1,20 @@
+import 'package:flutter_embedder/flutter_embedder.dart';
 import 'package:flutter_onnxruntime/flutter_onnxruntime.dart';
-//import 'package:transformers/transformers.dart';
 import 'package:path/path.dart' as path;
 import 'package:image/image.dart' as img;
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'dart:async';
 import 'dart:math';
-
-const mlPath = '/storage/emulated/0/model';
-const txtInputDtype = OrtDataType.int32;
-const visInputDtype = OrtDataType.float32;
-const imgSize = 224;
-const contextLen = 77;
-const embeddingLen = 512;
-const similarity = MlService.cosineSimilarity;
+import 'dart:convert';
 
 var initProc = false;
 final initialized = Completer<bool>();
 
 class MlService {
-  //late final PreTrainedTokenizer tokenizer;
+  late final dynamic config;
+  late final HfTokenizer tokenizer;
   late final OnnxRuntime ort;
   late final OrtSession txtSess;
   late final OrtSession visSess;
@@ -38,27 +33,57 @@ class MlService {
   }
 
   Future<void> init() async {
-    //tokenizer = AutoTokenizer.from_pretrained(mlPath);
+    await loadConfig();
+    await initFlutterEmbedder();
 
+    tokenizer = HfTokenizer.fromFile(path.join(config['mlPath'], 'tokenizer.json'));
     ort = OnnxRuntime();
 
-    txtSess = await ort.createSession(path.join(mlPath, 'textual.onnx'));
+    txtSess = await ort.createSession(path.join(config['mlPath'], 'textual.onnx'));
     txtX = txtSess.inputNames[0];
     txtY = txtSess.outputNames[0];
 
-    visSess = await ort.createSession(path.join(mlPath, 'visual.onnx'));
+    visSess = await ort.createSession(path.join(config['mlPath'], 'visual.onnx'));
     visX = visSess.inputNames[0];
     visY = visSess.outputNames[0];
 
     initialized.complete(true);
   }
 
+  Future<void> loadConfig() async {
+    OrtDataType dtypeFromString(String s) {
+      return switch(s) {
+        'int32' => OrtDataType.int32,
+        'int64' => OrtDataType.int64,
+        'float32' => OrtDataType.float32,
+        _ => OrtDataType.float32,
+      };
+    }
+
+    dynamic similarityFromString(String s) {
+      return switch(s) {
+        'cosineSimilarity' => cosineSimilarity,
+        'cosineSimilarityNormalized' => cosineSimilarityNormalized,
+        _ => cosineSimilarity
+      };
+    }
+
+    config = jsonDecode(await rootBundle.loadString('assets/mlconfig.json'));
+    config['txtInputDType'] = dtypeFromString(config['txtInputDType']);
+    config['visInputDType'] = dtypeFromString(config['visInputDType']);
+    config['similarity'] = similarityFromString(config['similarity']);
+
+    debugPrint('CONFIG ${config['visInputDType']}');
+  }
+
   Future<Uint8List> txtInference(String query) async {
-    //var h = [...tokenizer.encode(query).ids];
-    var h = [];
-    h.addAll(List<int>.filled((contextLen - h.length).toInt(), 0));
-    var j = await OrtValue.fromList(h, [1, contextLen]);
-    var k = await j.to(txtInputDtype);
+    await initialized.future;
+
+    var h = [...tokenizer.encode(query).ids];
+    h.addAll(List<int>.filled((config['contextLen'] - h.length).toInt(), 0));
+    var j = await OrtValue.fromList(h, [1, config['contextLen']]);
+
+    var k = await j.to(config['txtInputDType']);
 
     var y = await txtSess.run({txtX: k});
     var l = await y[txtY]!.to(OrtDataType.float32);
@@ -77,7 +102,7 @@ class MlService {
 
     final cmd = img.Command()
       ..decodeImageFile(p)
-      ..copyResize(width: imgSize, height: imgSize, maintainAspect: true, interpolation: img.Interpolation.cubic)
+      ..copyResize(width: config['imgSize'], height: config['imgSize'], maintainAspect: true, interpolation: img.Interpolation.cubic)
       ..convert(numChannels: 3);
     await cmd.executeThread();
 
@@ -85,8 +110,9 @@ class MlService {
       .getBytes(order: img.ChannelOrder.rgb)
       .map((i) => i / 255.0)
       .toList();
-    var j = await OrtValue.fromList(h, [1, 3*imgSize*imgSize]);
-    var k = await j.to(visInputDtype);
+    var j = await OrtValue.fromList(h, [1, (3 * config['imgSize'] * config['imgSize']).toInt()]);
+
+    var k = await j.to(config['visInputDType']);
 
     var y = await visSess.run({visX: k});
     var l = await y[visY]!.to(OrtDataType.float32);
@@ -100,39 +126,39 @@ class MlService {
     return o.buffer.asUint8List();
   }
 
-  static (Float32List, Float32List) convertBlobToList(Uint8List tRaw, Uint8List vRaw) {
+  (Float32List, Float32List) convertBlobToList(Uint8List tRaw, Uint8List vRaw) {
     ByteData b;
 
-    final t = Float32List(embeddingLen);
-    final v = Float32List(embeddingLen);
+    final t = Float32List(config['embeddingLen']);
+    final v = Float32List(config['embeddingLen']);
 
     b = ByteData.view(tRaw.buffer);
-    for(int i = 0; i < embeddingLen; i++) {
+    for(int i = 0; i < config['embeddingLen']; i++) {
       t[i] = b.getFloat32(tRaw.offsetInBytes + 4*i, Endian.little);
     }
     b = ByteData.view(vRaw.buffer);
-    for(int i = 0; i < embeddingLen; i++) {
+    for(int i = 0; i < config['embeddingLen']; i++) {
       v[i] = b.getFloat32(vRaw.offsetInBytes + 4*i, Endian.little);
     }
 
     return (t, v);
   }
 
-  static double cosineSimilarityInputNormalized(List t, List v) {
+  double cosineSimilarityNormalized(List t, List v) {
     double s = 0;
 
-    for (var i = 0; i < embeddingLen; i++) {
+    for (var i = 0; i < config['embeddingLen']; i++) {
       s += t[i] * v[i];
     }
     return s;
   }
 
-  static double cosineSimilarity(List t, List v) {
+  double cosineSimilarity(List t, List v) {
     double dotP = 0.0;
     double mag1 = 0.0;
     double mag2 = 0.0;
 
-    for(int i = 0; i < embeddingLen; i++) {
+    for(int i = 0; i < config['embeddingLen']; i++) {
       dotP += t[i] * v[i];
       mag1 += t[i] * t[i];
       mag2 += v[i] * v[i];
@@ -147,6 +173,6 @@ class MlService {
 
   double calcImgSimilarity(Uint8List tBlob, Uint8List vBlob) {
     var (t, v) = convertBlobToList(tBlob, vBlob);
-    return similarity(t, v);
+    return config['similarity'](t, v);
   }
 }

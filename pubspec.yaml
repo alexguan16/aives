@@ -83,6 +83,10 @@ dependencies:
   floating:
   fluster:
   flutter_displaymode:
+  flutter_embedder:
+    git:
+      url: https://github.com/alexguan16/flutter_embedder.git
+      ref: aives-mod
   flutter_highlight:
   flutter_localizations_plus:
     git:
@@ -130,8 +134,6 @@ dependencies:
     git:
       url: https://github.com/deckerst/aves_streams_channel.git
   synchronized:
-  #transformers:
-  #  path: ../../packages/transformers
   url_launcher:
   # vector_map_tiles v10.0.0-beta requires Flutter v3.37.0 and Impeller
   vector_map_tiles: ^9.0.0-beta.8

@@ -43,6 +43,8 @@ class CollectionLens with ChangeNotifier {
   List<AvesEntry> _filteredSortedEntries = [];
 
   Map<SectionKey, List<AvesEntry>> sections = Map.unmodifiable({});
+  Timer? periodicSortTimer;
+  EntrySortFactor prevSortFactor;
 
   CollectionLens({
     required this.source,
@@ -57,6 +59,7 @@ class CollectionLens with ChangeNotifier {
         burstPatterns = settings.collectionBurstPatterns,
         sectionFactor = settings.collectionSectionFactor,
         sortFactor = settings.collectionSortFactor,
+        prevSortFactor = settings.collectionSortFactor,
         sortReverse = settings.collectionSortReverse {
     if (kFlutterMemoryAllocationsEnabled) ChangeNotifier.maybeDispatchObjectCreation(this);
     id ??= hashCode;
@@ -164,6 +167,8 @@ class CollectionLens with ChangeNotifier {
       case EntrySortFactor.size:
       case EntrySortFactor.duration:
         return false;
+      case EntrySortFactor.similarity:
+        return false;
     }
   }
 
@@ -172,12 +177,20 @@ class CollectionLens with ChangeNotifier {
     for (final filter in newFilters) {
       filters.removeWhere((other) => !filter.isCompatible(other));
     }
+    for (var f in newFilters) {
+      if (f is QueryFilter && f.aiSearch) {
+        filters.removeWhere((e) => e is QueryFilter && e.aiSearch);
+        prevSortFactor = sortFactor == EntrySortFactor.similarity ? prevSortFactor : sortFactor;
+        sortFactor = EntrySortFactor.similarity;
+      }
+    }
     filters.addAll(newFilters);
     _onFilterChanged();
   }
 
   void removeFilter(CollectionFilter filter) {
     if (!filters.contains(filter)) return;
+    if(filter is QueryFilter && filter.aiSearch) sortFactor = prevSortFactor;
     filters.remove(filter);
     _onFilterChanged();
   }
@@ -272,10 +285,38 @@ class CollectionLens with ChangeNotifier {
         _filteredSortedEntries.sort(AvesEntrySort.compareByDuration);
       case EntrySortFactor.path:
         _filteredSortedEntries.sort(AvesEntrySort.compareByPath);
+      case EntrySortFactor.similarity:
+        _applyPeriodicSort();
     }
     if (sortReverse) {
       _filteredSortedEntries = _filteredSortedEntries.reversed.toList();
     }
+  }
+
+  void _applyPeriodicSort() {
+    const period = 500;
+    final unchangedWait = 1;
+    final unchangedIterations = (unchangedWait * 1000 / period).round();
+
+    var iters = 0;
+    var old = _filteredSortedEntries;
+
+    if(periodicSortTimer != null) periodicSortTimer!.cancel();
+    periodicSortTimer = Timer.periodic(const Duration(milliseconds: period), (timer) {
+      old = [..._filteredSortedEntries];
+      _filteredSortedEntries.sort(AvesEntrySort.compareBySimilarity);
+      if(listEquals(old, _filteredSortedEntries)) {
+        iters++;
+        if(iters > unchangedIterations) {
+          notifyListeners();
+          timer.cancel();
+          periodicSortTimer = null;
+        }
+      } else {
+        iters = 0;
+        notifyListeners();
+      }
+    });
   }
 
   void _applySection() {
@@ -306,6 +347,7 @@ class CollectionLens with ChangeNotifier {
           sections = groupBy<AvesEntry, EntryRatingSectionKey>(_filteredSortedEntries, (entry) => EntryRatingSectionKey(entry.rating));
         case EntrySortFactor.size:
         case EntrySortFactor.duration:
+        case EntrySortFactor.similarity:
           sections = Map.fromEntries([
             MapEntry(const SectionKey(), _filteredSortedEntries),
           ]);

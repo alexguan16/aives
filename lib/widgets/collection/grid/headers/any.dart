@@ -68,6 +68,7 @@ class CollectionSectionHeader extends StatelessWidget {
         );
       case EntrySortFactor.size:
       case EntrySortFactor.duration:
+      case EntrySortFactor.similarity:
         break;
     }
     return null;

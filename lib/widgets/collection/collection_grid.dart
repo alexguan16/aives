@@ -727,6 +727,7 @@ class _CollectionScrollViewState extends State<_CollectionScrollView> with Widge
       case EntrySortFactor.rating:
       case EntrySortFactor.size:
       case EntrySortFactor.duration:
+      case EntrySortFactor.similarity:
         break;
     }
     return crumbs;
