@@ -95,6 +95,8 @@ dependencies:
   flutter_map:
   flutter_markdown_plus:
   flutter_onnxruntime:
+    git:
+      url: https://github.com/alexguan16/flutter_onnxruntime_mt.git
   flutter_staggered_animations:
   get_it:
   gpx:
