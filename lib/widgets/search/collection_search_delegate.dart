@@ -8,6 +8,7 @@ import 'package:aves/model/filters/covered/tag.dart';
 import 'package:aves/model/filters/date.dart';
 import 'package:aves/model/filters/favourite.dart';
 import 'package:aves/model/filters/filters.dart';
+import 'package:aves/model/filters/query.dart';
 import 'package:aves/model/filters/mime.dart';
 import 'package:aves/model/filters/missing.dart';
 import 'package:aves/model/filters/query.dart';
@@ -93,7 +94,7 @@ class CollectionSearchDelegate extends AvesSearchDelegate with FeedbackMixin, Va
   @override
   Widget buildSuggestions(BuildContext context) {
     final upQuery = query.trim().toUpperCase();
-    bool containQuery(CollectionFilter filter) => filter.matchLabel(context, upQuery);
+    bool containQuery(CollectionFilter filter) => !(filter is QueryFilter && filter.aiSearch);
     return SafeArea(
       child: NotificationListener(
         onNotification: (notification) {

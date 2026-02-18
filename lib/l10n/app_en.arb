@@ -626,6 +626,7 @@
   "collectionPickPageTitle": "Pick",
   "collectionSelectPageTitle": "Select items",
 
+  "collectionActionSearchClear": "Clear Search",
   "collectionActionShowTitleSearch": "Show title filter",
   "collectionActionHideTitleSearch": "Hide title filter",
   "collectionActionAddDynamicAlbum": "Add dynamic album",

@@ -1,4 +1,5 @@
 import 'package:aves/model/filters/filters.dart';
+import 'package:aves/model/filters/query.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/theme/durations.dart';
 import 'package:aves/widgets/common/identity/aves_app_bar.dart';
@@ -32,7 +33,7 @@ class _FilterBarState extends State<FilterBar> {
   final GlobalKey<AnimatedListState> _animatedListKey = GlobalKey(debugLabel: 'filter-bar-animated-list');
   CollectionFilter? _userTappedFilter;
 
-  List<CollectionFilter> get filters => widget.filters;
+  List<CollectionFilter> get filters => widget.filters.where((e) => !(e is QueryFilter && e.aiSearch)).toList();
 
   @override
   void didUpdateWidget(covariant FilterBar oldWidget) {

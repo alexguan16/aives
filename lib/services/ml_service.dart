@@ -147,7 +147,7 @@ class MlService {
   double cosineSimilarityNormalized(List t, List v) {
     double s = 0;
 
-    for (var i = 0; i < config['embeddingLen']; i++) {
+    for(var i = 0; i < config['embeddingLen']; i++) {
       s += t[i] * v[i];
     }
     return s;

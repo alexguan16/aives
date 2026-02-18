@@ -83,6 +83,7 @@ class EntrySetActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAware
         return isSelecting && selectedItemCount == itemCount;
       // browsing
       case EntrySetAction.searchCollection:
+      case EntrySetAction.clear:
         return appMode.canNavigate && !isSelecting && !useTvLayout;
       case EntrySetAction.toggleTitleSearch:
         return !isSelecting && !useTvLayout;
@@ -144,6 +145,7 @@ class EntrySetActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAware
         return selectedItemCount < itemCount || (!isSelecting && settings.collectionBrowsingQuickActions.contains(action));
       case EntrySetAction.selectNone:
         return hasSelection;
+      case EntrySetAction.clear:
       case EntrySetAction.searchCollection:
       case EntrySetAction.toggleTitleSearch:
       case EntrySetAction.addShortcut:
@@ -190,6 +192,8 @@ class EntrySetActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAware
       case EntrySetAction.selectNone:
         break;
       // browsing
+      case EntrySetAction.clear:
+        _clear(context);
       case EntrySetAction.searchCollection:
         _goToSearch(context);
       case EntrySetAction.toggleTitleSearch:
@@ -774,12 +778,19 @@ class EntrySetActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAware
     );
   }
 
+  void _clear(BuildContext context) {
+    final collection = context.read<CollectionLens>();
+    var aiFilter = collection.aiFilter;
+    if(aiFilter != null) collection.removeFilter(aiFilter);
+  }
+
   void _goToSearch(BuildContext context) {
     final collection = context.read<CollectionLens>();
 
     Navigator.maybeOf(context)?.push(
       SearchPageRoute(
         delegate: CollectionSearchDelegate(
+          initialQuery: context.read<CollectionLens>().aiFilter?.query,
           searchFieldLabel: context.l10n.searchCollectionFieldHint,
           searchFieldStyle: Themes.searchFieldStyle(context),
           source: collection.source,

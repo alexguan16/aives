@@ -5,6 +5,7 @@ enum EntrySetAction {
   selectAll,
   selectNone,
   // browsing
+  clear,
   searchCollection,
   toggleTitleSearch,
   addDynamicAlbum,

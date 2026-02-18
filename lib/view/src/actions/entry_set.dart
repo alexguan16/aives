@@ -13,6 +13,7 @@ extension ExtraEntrySetActionView on EntrySetAction {
       EntrySetAction.selectAll => l10n.menuActionSelectAll,
       EntrySetAction.selectNone => l10n.menuActionSelectNone,
       // browsing
+      EntrySetAction.clear => l10n.collectionActionSearchClear,
       EntrySetAction.searchCollection => MaterialLocalizations.of(context).searchFieldLabel,
       EntrySetAction.toggleTitleSearch =>
         // different data depending on toggle state
@@ -92,6 +93,7 @@ extension ExtraEntrySetActionView on EntrySetAction {
       EntrySetAction.editRating => AIcons.rating,
       EntrySetAction.editTags => AIcons.tag,
       EntrySetAction.removeMetadata => AIcons.clear,
+      EntrySetAction.clear => AIcons.clear,
     };
   }
 }

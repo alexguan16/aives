@@ -77,7 +77,7 @@ class _CollectionAppBarState extends State<CollectionAppBar> with RouteAware, Si
 
   CollectionSource get source => collection.source;
 
-  Set<CollectionFilter> get visibleFilters => collection.filters.where((v) => !(v is QueryFilter && v.live) && v is! TrashFilter).toSet();
+  Set<CollectionFilter> get visibleFilters => collection.filters.where((v) => !(v is QueryFilter && (v.live || v.aiSearch)) && v is! TrashFilter).toSet();
 
   bool get showFilterBar => visibleFilters.isNotEmpty;
 
@@ -311,6 +311,7 @@ class _CollectionAppBarState extends State<CollectionAppBar> with RouteAware, Si
 
   Widget _buildAppBarTitle(bool isSelecting) {
     final l10n = context.l10n;
+    QueryFilter? aiFilter = collection.aiFilter;
 
     if (isSelecting) {
       // `Selection` may not be available during hero
@@ -325,12 +326,24 @@ class _CollectionAppBarState extends State<CollectionAppBar> with RouteAware, Si
       );
     } else {
       final appMode = context.watch<ValueNotifier<AppMode>>().value;
-      Widget title = Text(
-        appMode.isPickingMedia ? l10n.collectionPickPageTitle : (isTrash ? l10n.binPageTitle : l10n.collectionPageTitle),
-        softWrap: false,
-        overflow: TextOverflow.fade,
-        maxLines: 1,
-      );
+      Widget title;
+      if (aiFilter != null) {
+        title = Container(
+          height: 56 - 8,
+          alignment: const Alignment(-1.0, 0.0),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Text(aiFilter.query),
+          ),
+        );
+      } else {
+        title = Text(
+          appMode.isPickingMedia ? l10n.collectionPickPageTitle : (isTrash ? l10n.binPageTitle : l10n.collectionPageTitle),
+          softWrap: false,
+          overflow: TextOverflow.fade,
+          maxLines: 1,
+        );
+      }
       if (appMode == AppMode.main) {
         title = SourceStateAwareAppBarTitle(
           title: title,
@@ -511,7 +524,7 @@ class _CollectionAppBarState extends State<CollectionAppBar> with RouteAware, Si
     required Selection<AvesEntry> selection,
   }) {
     final blurred = settings.enableBlurEffect;
-    final onPressed = enabled ? () => _onActionSelected(action) : null;
+    var onPressed = enabled ? () => _onActionSelected(action) : null;
     switch (action) {
       case EntrySetAction.toggleTitleSearch:
         // `Query` may not be available during hero
@@ -558,6 +571,23 @@ class _CollectionAppBarState extends State<CollectionAppBar> with RouteAware, Si
           entries: _getExpandedSelectedItems(selection),
           focusNode: focusNode,
           onPressed: onPressed,
+        );
+      case EntrySetAction.searchCollection:
+        var actionKey = _getActionKey(action);
+        var actionIcon = action.getIcon();
+        var actionText = action.getText(context);
+        if(collection.aiFilter != null) {
+          actionKey = _getActionKey(EntrySetAction.clear);
+          onPressed = () => _onActionSelected(EntrySetAction.clear);
+          actionIcon = EntrySetAction.clear.getIcon();
+          actionText = EntrySetAction.clear.getText(context);
+        }
+        return IconButton(
+          key: actionKey,
+          icon: actionIcon,
+          onPressed: onPressed,
+          focusNode: focusNode,
+          tooltip: actionText,
         );
       default:
         return IconButton(
@@ -716,6 +746,7 @@ class _CollectionAppBarState extends State<CollectionAppBar> with RouteAware, Si
       case EntrySetAction.selectNone:
         context.read<Selection<AvesEntry>>().clearSelection();
       // browsing
+      case EntrySetAction.clear:
       case EntrySetAction.searchCollection:
       case EntrySetAction.toggleTitleSearch:
       case EntrySetAction.addDynamicAlbum:
@@ -768,6 +799,7 @@ class _CollectionAppBarState extends State<CollectionAppBar> with RouteAware, Si
           sortOrder: (factor, reverse) => factor.getOrderName(context, reverse),
           canSection: (s, g, l) => s == EntrySortFactor.date,
           tileExtentController: extentController,
+          collection: collection,
         );
       },
       routeSettings: const RouteSettings(name: TileViewDialog.routeName),
@@ -786,6 +818,8 @@ class _CollectionAppBarState extends State<CollectionAppBar> with RouteAware, Si
     Navigator.maybeOf(context)?.push(
       SearchPageRoute(
         delegate: CollectionSearchDelegate(
+          initialQuery: collection.aiFilter?.query,
+
           searchFieldLabel: context.l10n.searchCollectionFieldHint,
           searchFieldStyle: Themes.searchFieldStyle(context),
           source: collection.source,

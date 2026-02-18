@@ -1,4 +1,6 @@
+import 'package:aves/model/filters/query.dart';
 import 'package:aves/model/settings/settings.dart';
+import 'package:aves/model/source/collection_lens.dart';
 import 'package:aves/theme/durations.dart';
 import 'package:aves/theme/icons.dart';
 import 'package:aves/theme/themes.dart';
@@ -24,6 +26,7 @@ class TileViewDialog<S, G, L> extends StatefulWidget {
   final String Function(S sort, bool reverse) sortOrder;
   final TileExtentController tileExtentController;
   final bool Function(S? sort, G? section, L? layout)? canSection;
+  final CollectionLens? collection;
 
   const TileViewDialog({
     super.key,
@@ -34,6 +37,7 @@ class TileViewDialog<S, G, L> extends StatefulWidget {
     required this.sortOrder,
     this.canSection,
     required this.tileExtentController,
+    this.collection,
   });
 
   @override
@@ -82,10 +86,11 @@ class _TileViewDialogState<S, G, L> extends State<TileViewDialog<S, G, L>> with 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final aiSearch = widget.collection?.aiFilter != null;
 
     return AvesDialog(
       scrollableContent: [
-        _buildSection(
+        if(!aiSearch) _buildSection(
           icon: AIcons.sort,
           title: l10n.viewDialogSortSectionTitle,
           trailing: IconButton(
@@ -101,7 +106,7 @@ class _TileViewDialogState<S, G, L> extends State<TileViewDialog<S, G, L>> with 
           },
           bottom: _selectedSort != null ? AvesCaption(widget.sortOrder(_selectedSort as S, _reverseSort)) : null,
         ),
-        AnimatedSwitcher(
+        if(!aiSearch) AnimatedSwitcher(
           duration: context.read<DurationsData>().formTransition,
           switchInCurve: Curves.easeInOutCubic,
           switchOutCurve: Curves.easeInOutCubic,

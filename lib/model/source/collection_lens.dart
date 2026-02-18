@@ -136,6 +136,8 @@ class CollectionLens with ChangeNotifier {
 
   int get entryCount => _filteredSortedEntries.length;
 
+  QueryFilter? get aiFilter => filters.firstWhereOrNull((e) => e is QueryFilter && e.aiSearch) as QueryFilter?;
+
   // sorted as displayed to the user, i.e. sorted then sectioned, not an absolute order on all entries
   List<AvesEntry>? _sortedEntries;
 

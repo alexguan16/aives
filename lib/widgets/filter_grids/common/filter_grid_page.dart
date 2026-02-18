@@ -315,19 +315,7 @@ class _FilterGridContentState<T extends CollectionFilter> extends State<_FilterG
         return ValueListenableBuilder<String>(
           valueListenable: context.select<Query, ValueNotifier<String>>((query) => query.queryNotifier),
           builder: (context, query, child) {
-            Map<ChipSectionKey, List<FilterGridItem<T>>> visibleSections;
-            if (queryEnabled && query.isNotEmpty) {
-              visibleSections = {};
-              final queryUp = query.toUpperCase();
-              widget.sections.forEach((sectionKey, sectionFilters) {
-                final visibleFilters = sectionFilters.where((item) => item.filter.matchLabel(context, queryUp)).toList();
-                if (visibleFilters.isNotEmpty) {
-                  visibleSections[sectionKey] = visibleFilters;
-                }
-              });
-            } else {
-              visibleSections = widget.sections;
-            }
+            var visibleSections = widget.sections;
 
             final sectionedListLayoutProvider = ValueListenableBuilder<double>(
               valueListenable: context.select<TileExtentController, ValueNotifier<double>>((controller) => controller.extentNotifier),
