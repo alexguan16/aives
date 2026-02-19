@@ -54,6 +54,15 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.2.9"
+  battery_optimization_helper:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: HEAD
+      resolved-ref: a2121e2cd0a58927543e0d42cdcce1b4b0b8ef9a
+      url: "https://github.com/alexguan16/battery_optimization_helper.git"
+    source: git
+    version: "0.2.0"
   bidi:
     dependency: transitive
     description:

@@ -59,6 +59,9 @@ dependencies:
     path: plugins/aves_ui
   aves_utils:
     path: plugins/aves_utils
+  battery_optimization_helper:
+    git:
+      url: https://github.com/alexguan16/battery_optimization_helper.git
   charts_flutter:
     git:
       # https://github.com/fzyzcjy/charts.git master commit de76a46 (Sep 26, 2022) is incompatible with Flutter v3.10

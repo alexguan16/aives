@@ -17,6 +17,7 @@ class SettingKeys {
 
   // app
   static const hasAcceptedTermsKey = 'has_accepted_terms';
+  static const hasAcceptedBatteryOptimizationKey = 'has_accepted_battery_optimization';
   static const canUseAnalysisServiceKey = 'can_use_analysis_service';
   static const isInstalledAppAccessAllowedKey = 'is_installed_app_access_allowed';
   static const isErrorReportingAllowedKey = 'is_crashlytics_enabled';

@@ -18,6 +18,10 @@ mixin AppSettings on SettingsAccess {
 
   set hasAcceptedTerms(bool newValue) => set(SettingKeys.hasAcceptedTermsKey, newValue);
 
+  bool get hasAcceptedBatteryOptimization => getBool(SettingKeys.hasAcceptedBatteryOptimizationKey) ?? SettingsDefaults.hasAcceptedBatteryOptimization;
+
+  set hasAcceptedBatteryOptimization(bool newValue) => set(SettingKeys.hasAcceptedBatteryOptimizationKey, newValue);
+
   bool get canUseAnalysisService => getBool(SettingKeys.canUseAnalysisServiceKey) ?? SettingsDefaults.canUseAnalysisService;
 
   set canUseAnalysisService(bool newValue) => set(SettingKeys.canUseAnalysisServiceKey, newValue);

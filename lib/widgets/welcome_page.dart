@@ -17,6 +17,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:provider/provider.dart';
+import 'package:battery_optimization_helper/battery_optimization_helper.dart';
 
 class WelcomePage extends StatefulWidget {
   const WelcomePage({super.key});
@@ -169,6 +170,9 @@ class _WelcomePageState extends State<WelcomePage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          BatteryOptimizationTile(
+            contentPadding: contentPadding,
+          ),
           SwitchListTile(
             key: const Key('apps-checkbox'),
             value: settings.isInstalledAppAccessAllowed,
@@ -201,7 +205,7 @@ class _WelcomePageState extends State<WelcomePage> {
       // key is expected by test driver
       key: const Key('continue-button'),
       label: context.l10n.continueButtonLabel,
-      onPressed: _hasAcceptedTerms
+      onPressed: _hasAcceptedTerms && settings.hasAcceptedBatteryOptimization
           ? () {
               settings.hasAcceptedTerms = true;
               Navigator.pushReplacement(
@@ -257,4 +261,58 @@ class _WelcomePageState extends State<WelcomePage> {
           })
           .values
           .toList();
+}
+
+class BatteryOptimizationTile extends StatefulWidget {
+  final EdgeInsets contentPadding;
+
+  const BatteryOptimizationTile({super.key, required this.contentPadding});
+
+  @override
+  State<BatteryOptimizationTile> createState() => _BatteryOptimizationTileState();
+}
+
+class _BatteryOptimizationTileState extends State<BatteryOptimizationTile> with WidgetsBindingObserver {
+  late Icon _batteryPermissionsIcon;
+  var getBatteryPermissionsIcon = () => settings.hasAcceptedBatteryOptimization
+    ? const Icon(Icons.check_circle)
+    : const Icon(Icons.radio_button_unchecked);
+
+  _BatteryOptimizationTileState();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _checkStatus();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if(state == AppLifecycleState.resumed) _checkStatus();
+  }
+
+  Future<void> _checkStatus() async {
+    settings.hasAcceptedBatteryOptimization = !(await BatteryOptimizationHelper.isBatteryOptimizationEnabled());
+    setState(() {
+      _batteryPermissionsIcon = getBatteryPermissionsIcon();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      contentPadding: widget.contentPadding,
+      leading: _batteryPermissionsIcon,
+      title: const Text('Enable background work (required)'),
+      trailing: const Icon(Icons.arrow_forward_ios),
+      onTap: BatteryOptimizationHelper.openBatteryOptimizationSettings,
+    );
+  }
 }
