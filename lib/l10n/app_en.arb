@@ -1123,5 +1123,6 @@
   "panoramaEnableSensorControl": "Enable sensor control",
   "panoramaDisableSensorControl": "Disable sensor control",
 
-  "sourceViewerPageTitle": "Source"
+  "sourceViewerPageTitle": "Source",
+  "performFirstAnalysisPopup": "cataloging not done"
 }

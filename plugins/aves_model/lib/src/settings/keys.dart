@@ -16,6 +16,7 @@ class SettingKeys {
   static const _widgetKeyPrefix = 'widget_';
 
   // app
+  static const firstAnalysisPerformed = 'first_analysis_performed';
   static const hasAcceptedTermsKey = 'has_accepted_terms';
   static const hasAcceptedBatteryOptimizationKey = 'has_accepted_battery_optimization';
   static const canUseAnalysisServiceKey = 'can_use_analysis_service';

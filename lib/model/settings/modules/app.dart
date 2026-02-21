@@ -14,6 +14,10 @@ mixin AppSettings on SettingsAccess {
     vaults.addListener(_onVaultsChanged);
   }
 
+  bool get firstAnalysisPerformed => getBool(SettingKeys.firstAnalysisPerformed) ?? SettingsDefaults.firstAnalysisPerformed;
+
+  set firstAnalysisPerformed(bool newValue) => set(SettingKeys.firstAnalysisPerformed, newValue);
+
   bool get hasAcceptedTerms => getBool(SettingKeys.hasAcceptedTermsKey) ?? SettingsDefaults.hasAcceptedTerms;
 
   set hasAcceptedTerms(bool newValue) => set(SettingKeys.hasAcceptedTermsKey, newValue);

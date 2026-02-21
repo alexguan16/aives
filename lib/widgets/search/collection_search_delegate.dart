@@ -11,7 +11,6 @@ import 'package:aves/model/filters/filters.dart';
 import 'package:aves/model/filters/query.dart';
 import 'package:aves/model/filters/mime.dart';
 import 'package:aves/model/filters/missing.dart';
-import 'package:aves/model/filters/query.dart';
 import 'package:aves/model/filters/rating.dart';
 import 'package:aves/model/filters/recent.dart';
 import 'package:aves/model/filters/type.dart';
@@ -35,6 +34,7 @@ import 'package:aves/widgets/common/search/delegate.dart';
 import 'package:aves/widgets/common/search/page.dart';
 import 'package:aves/widgets/viewer/controls/notifications.dart';
 import 'package:flutter/material.dart';
+import 'package:overlay_support/overlay_support.dart';
 import 'package:provider/provider.dart';
 
 class CollectionSearchDelegate extends AvesSearchDelegate with FeedbackMixin, VaultAwareMixin {
@@ -368,6 +368,15 @@ class CollectionSearchDelegate extends AvesSearchDelegate with FeedbackMixin, Va
           ..insert(0, filter);
         settings.searchHistory = history.take(searchHistoryCount).toList();
       }
+    }
+
+    if(newFilters.any((e) => e is QueryFilter && e.aiSearch) && !settings.firstAnalysisPerformed) {
+      newFilters.removeWhere((e) => e is QueryFilter && e.aiSearch);
+
+      toast(
+        context.l10n.performFirstAnalysisPopup,
+        duration: const Duration(seconds: 3),
+      );
     }
 
     if (parentCollection != null) {

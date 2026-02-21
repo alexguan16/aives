@@ -13,6 +13,7 @@ import 'package:aves_model/aves_model.dart';
 
 class SettingsDefaults {
   // app
+  static const firstAnalysisPerformed = false;
   static const hasAcceptedTerms = false;
   static const hasAcceptedBatteryOptimization = false;
   static const canUseAnalysisService = true;
