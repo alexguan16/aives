@@ -11,6 +11,7 @@ class CatalogMetadata {
   double? latitude, longitude;
   Address? address;
   int rating;
+  Uint8List? embedding;
 
   // less lenient than Flutter's `precisionErrorTolerance` (1e-10)
   static const double _precisionErrorTolerance = 1e-9;
@@ -40,6 +41,7 @@ class CatalogMetadata {
     double? latitude,
     double? longitude,
     this.rating = 0,
+    this.embedding,
   }) {
     // Geocoder throws an `IllegalArgumentException` when a coordinate has a funky value like `1.7056881853375E7`
     // We also exclude zero coordinates, taking into account precision errors (e.g. {5.952380952380953e-11,-2.7777777777777777e-10}),
@@ -82,6 +84,7 @@ class CatalogMetadata {
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
       rating: rating,
+      embedding: embedding,
     );
   }
 
@@ -105,6 +108,7 @@ class CatalogMetadata {
       latitude: map['latitude'],
       longitude: map['longitude'],
       rating: map['rating'] ?? 0,
+      embedding: map['embedding'],
     );
   }
 
@@ -119,6 +123,7 @@ class CatalogMetadata {
         'latitude': latitude,
         'longitude': longitude,
         'rating': rating,
+        'embedding': embedding,
       };
 
   @override

@@ -25,6 +25,4 @@ class EntryFields {
   static const trashed = 'trashed'; // boolean
   static const trashPath = 'trashPath'; // string
   static const title = 'title'; // string
-
-  static const embedding = 'embedding';
 }

@@ -90,6 +90,12 @@ class PlatformMetadataFetchService implements MetadataFetchService {
         }) as Map;
         result['id'] = entry.id;
         AvesEntry.normalizeMimeTypeFields(result);
+
+        if(entry.isImage) {
+          if(entry.path != null) result['embedding'] = await mlService.imgInference(entry.path!);
+        } else if(entry.isVideo) {
+        }
+
         return CatalogMetadata.fromMap(result);
       } on PlatformException catch (e, stack) {
         if (entry.isValid) {
