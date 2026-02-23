@@ -261,9 +261,10 @@ class _CollectionGridContentState extends State<_CollectionGridContent> {
       TransparentMaterialPageRoute(
         settings: const RouteSettings(name: EntryViewerPage.routeName),
         pageBuilder: (context, a, sa) {
-          final viewerCollection = collection.copyWith(
-            listenToSource: false,
-          );
+          final viewerCollection = collection;
+          //final viewerCollection = collection.copyWith(
+            //listenToSource: false,
+          //);
           Widget child = EntryViewerPage(
             collection: viewerCollection,
             initialEntry: entry,

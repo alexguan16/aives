@@ -184,6 +184,7 @@ class CollectionLens with ChangeNotifier {
         filters.removeWhere((e) => e is QueryFilter && e.aiSearch);
         prevSortFactor = sortFactor == EntrySortFactor.similarity ? prevSortFactor : sortFactor;
         sortFactor = EntrySortFactor.similarity;
+        _onFilterChanged();
       }
     }
     filters.addAll(newFilters);
@@ -274,6 +275,7 @@ class CollectionLens with ChangeNotifier {
   void _applySort() {
     if (fixedSort) return;
 
+    periodicSortTimer?.cancel();
     switch (sortFactor) {
       case EntrySortFactor.date:
         _filteredSortedEntries.sort(AvesEntrySort.compareByDate);
@@ -288,6 +290,7 @@ class CollectionLens with ChangeNotifier {
       case EntrySortFactor.path:
         _filteredSortedEntries.sort(AvesEntrySort.compareByPath);
       case EntrySortFactor.similarity:
+        //_filteredSortedEntries.sort(AvesEntrySort.compareBySimilarity);
         _applyPeriodicSort();
     }
     if (sortReverse) {
@@ -297,26 +300,26 @@ class CollectionLens with ChangeNotifier {
 
   void _applyPeriodicSort() {
     const period = 500;
-    final unchangedWait = 1;
+    const unchangedWait = 1;
     final unchangedIterations = (unchangedWait * 1000 / period).round();
 
     var iters = 0;
     var old = _filteredSortedEntries;
 
-    if(periodicSortTimer != null) periodicSortTimer!.cancel();
+    periodicSortTimer?.cancel();
     periodicSortTimer = Timer.periodic(const Duration(milliseconds: period), (timer) {
       old = [..._filteredSortedEntries];
       _filteredSortedEntries.sort(AvesEntrySort.compareBySimilarity);
       if(listEquals(old, _filteredSortedEntries)) {
         iters++;
         if(iters > unchangedIterations) {
-          notifyListeners();
+          _applySection();
           timer.cancel();
           periodicSortTimer = null;
         }
       } else {
         iters = 0;
-        notifyListeners();
+        _applySection();
       }
     });
   }
