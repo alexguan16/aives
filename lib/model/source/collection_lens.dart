@@ -24,6 +24,7 @@ import 'package:aves/utils/collection_utils.dart';
 import 'package:aves_model/aves_model.dart';
 import 'package:aves_utils/aves_utils.dart';
 import 'package:collection/collection.dart';
+import 'package:collection/collection.dart' as collection; // resolve mergeSort conflict
 import 'package:flutter/foundation.dart';
 
 class CollectionLens with ChangeNotifier {
@@ -300,7 +301,7 @@ class CollectionLens with ChangeNotifier {
 
   void _applyPeriodicSort() {
     const period = 500;
-    const unchangedWait = 1;
+    const unchangedWait = 3;
     final unchangedIterations = (unchangedWait * 1000 / period).round();
 
     var iters = 0;
@@ -309,7 +310,7 @@ class CollectionLens with ChangeNotifier {
     periodicSortTimer?.cancel();
     periodicSortTimer = Timer.periodic(const Duration(milliseconds: period), (timer) {
       old = [..._filteredSortedEntries];
-      _filteredSortedEntries.sort(AvesEntrySort.compareBySimilarity);
+      collection.mergeSort(_filteredSortedEntries, compare: AvesEntrySort.compareBySimilarity);
       if(listEquals(old, _filteredSortedEntries)) {
         iters++;
         if(iters > unchangedIterations) {
