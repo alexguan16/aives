@@ -1,3 +1,4 @@
+import 'package:aves/model/settings/settings.dart';
 import 'package:flutter_embedder/flutter_embedder.dart';
 import 'package:flutter_onnxruntime/flutter_onnxruntime.dart';
 import 'package:path/path.dart' as path;
@@ -5,6 +6,7 @@ import 'package:image/image.dart' as img;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'dart:io';
 import 'dart:async';
 import 'dart:math';
 import 'dart:convert';
@@ -33,24 +35,30 @@ class MlService {
   }
 
   Future<void> init() async {
-    await loadConfig();
     await initFlutterEmbedder();
-
-    tokenizer = HfTokenizer.fromFile(path.join(config['mlPath'], 'tokenizer.json'));
     ort = OnnxRuntime();
 
-    txtSess = await ort.createSession(path.join(config['mlPath'], 'textual.onnx'));
+    if(settings.mlCustom == true) {
+      await loadConfig(settings.mlConfig);
+      tokenizer = HfTokenizer.fromFile(path.join(config['mlPath'], 'tokenizer.json'));
+      txtSess = await ort.createSession(path.join(config['mlPath'], 'textual.onnx'));
+      visSess = await ort.createSession(path.join(config['mlPath'], 'visual.onnx'));
+    } else {
+      await loadConfig();
+      tokenizer = await HfTokenizer.fromAsset('assets/tokenizer.json');
+      txtSess = await ort.createSessionFromAsset('assets/textual.onnx');
+      visSess = await ort.createSessionFromAsset('assets/visual.onnx');
+    }
+
     txtX = txtSess.inputNames[0];
     txtY = txtSess.outputNames[0];
-
-    visSess = await ort.createSession(path.join(config['mlPath'], 'visual.onnx'));
     visX = visSess.inputNames[0];
     visY = visSess.outputNames[0];
 
     initialized.complete(true);
   }
 
-  Future<void> loadConfig() async {
+  Future<void> loadConfig([String? p]) async {
     OrtDataType dtypeFromString(String s) {
       return switch(s) {
         'int32' => OrtDataType.int32,
@@ -68,7 +76,9 @@ class MlService {
       };
     }
 
-    config = jsonDecode(await rootBundle.loadString('assets/mlconfig.json'));
+    config = p == null
+      ? jsonDecode(await rootBundle.loadString('assets/mlconfig.json'))
+      : jsonDecode(await File(p).readAsString());
     config['txtInputDType'] = dtypeFromString(config['txtInputDType']);
     config['visInputDType'] = dtypeFromString(config['visInputDType']);
     config['similarity'] = similarityFromString(config['similarity']);

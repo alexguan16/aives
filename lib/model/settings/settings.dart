@@ -23,6 +23,7 @@ import 'package:aves/model/settings/modules/search.dart';
 import 'package:aves/model/settings/modules/slideshow.dart';
 import 'package:aves/model/settings/modules/viewer.dart';
 import 'package:aves/model/settings/modules/widget.dart';
+import 'package:aves/model/settings/modules/ml.dart';
 import 'package:aves/ref/bursts.dart';
 import 'package:aves/services/accessibility_service.dart';
 import 'package:aves/services/common/services.dart';
@@ -44,7 +45,7 @@ import 'package:latlong2/latlong.dart';
 
 final Settings settings = Settings._private();
 
-class Settings with ChangeNotifier, SettingsAccess, SearchSettings, AppSettings, CollectionSettings, DebugSettings, DisplaySettings, FilterGridsSettings, InfoSettings, NavigationSettings, PrivacySettings, ScreenSaverSettings, SlideshowSettings, SubtitlesSettings, VideoSettings, ViewerSettings, WidgetSettings {
+class Settings with ChangeNotifier, SettingsAccess, SearchSettings, AppSettings, CollectionSettings, DebugSettings, DisplaySettings, FilterGridsSettings, InfoSettings, NavigationSettings, PrivacySettings, ScreenSaverSettings, SlideshowSettings, SubtitlesSettings, VideoSettings, ViewerSettings, WidgetSettings, MLSettings {
   final Set<StreamSubscription> _subscriptions = {};
   final EventChannel _platformSettingsChangeChannel = const OptionalEventChannel('deckers.thibault/aves/settings_change');
   final StreamController<SettingsChangedEvent> _updateStreamController = StreamController.broadcast();

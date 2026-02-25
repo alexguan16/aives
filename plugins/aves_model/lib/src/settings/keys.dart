@@ -189,6 +189,10 @@ class SettingKeys {
   static const widgetDisplayedItemPrefixKey = '${_widgetKeyPrefix}displayed_item_';
   static const widgetUriPrefixKey = '${_widgetKeyPrefix}uri_';
 
+  // mlSettings
+  static const mlCustom = 'mlCustom';
+  static const mlConfig = 'mlConfig';
+
   // platform settings
   // cf Android `Settings.System.ACCELEROMETER_ROTATION`
   static const platformAccelerometerRotationKey = 'accelerometer_rotation';

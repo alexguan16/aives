@@ -141,6 +141,9 @@ class SettingsDefaults {
   static const widgetOpenPage = WidgetOpenPage.viewer;
   static const widgetDisplayedItem = WidgetDisplayedItem.random;
 
+  //mlSettings
+  static const mlCustom = false;
+
   // platform settings
   static const isRotationLocked = false;
   static const areAnimationsRemoved = false;
