@@ -50,6 +50,7 @@ class AvesEntry with AvesEntryBase {
   List<AvesEntry>? stackedEntries;
 
   double similarity = 0;
+  dynamic txtEmbedding;
 
   @override
   final AChangeNotifier visualChangeNotifier = AChangeNotifier();
@@ -506,10 +507,12 @@ class AvesEntry with AvesEntryBase {
   Future<void> calcSimilarity(Completer<Uint8List> txtEmb) async {
     similarity = 0;
     if(catalogMetadata?.embedding == null) {
+      txtEmbedding = txtEmb;
       return;
     } else if(isImage) {
       similarity = mlService.calcImgSimilarity(await txtEmb.future, catalogMetadata!.embedding!);
     } else if(isVideo) {
     }
+    txtEmbedding = txtEmb;
   }
 }

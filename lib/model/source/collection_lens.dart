@@ -44,7 +44,6 @@ class CollectionLens with ChangeNotifier {
   List<AvesEntry> _filteredSortedEntries = [];
 
   Map<SectionKey, List<AvesEntry>> sections = Map.unmodifiable({});
-  Timer? periodicSortTimer;
   EntrySortFactor prevSortFactor;
 
   CollectionLens({
@@ -291,38 +290,22 @@ class CollectionLens with ChangeNotifier {
       case EntrySortFactor.path:
         _filteredSortedEntries.sort(AvesEntrySort.compareByPath);
       case EntrySortFactor.similarity:
-        //_filteredSortedEntries.sort(AvesEntrySort.compareBySimilarity);
-        _applyPeriodicSort();
+        _applyFutureSort();
     }
     if (sortReverse) {
       _filteredSortedEntries = _filteredSortedEntries.reversed.toList();
     }
   }
 
-  void _applyPeriodicSort() {
-    const period = 500;
-    const unchangedWait = 3;
-    final unchangedIterations = (unchangedWait * 1000 / period).round();
-
-    var iters = 0;
-    var old = _filteredSortedEntries;
-
-    periodicSortTimer?.cancel();
-    periodicSortTimer = Timer.periodic(const Duration(milliseconds: period), (timer) {
-      old = [..._filteredSortedEntries];
-      collection.mergeSort(_filteredSortedEntries, compare: AvesEntrySort.compareBySimilarity);
-      if(listEquals(old, _filteredSortedEntries)) {
-        iters++;
-        if(iters > unchangedIterations) {
-          _applySection();
-          timer.cancel();
-          periodicSortTimer = null;
-        }
-      } else {
-        iters = 0;
-        _applySection();
-      }
-    });
+  Future<void> _applyFutureSort() async {
+    final token = aiFilter?.txtEmbedding;
+    await aiFilter!.txtEmbedding!.future;
+    while(_filteredSortedEntries.any((e) => e.txtEmbedding != aiFilter!.txtEmbedding)) {
+      await Future.delayed(const Duration(milliseconds: 200));
+      if(token != aiFilter!.txtEmbedding) return;
+    }
+    _filteredSortedEntries.sort(AvesEntrySort.compareBySimilarity);
+    _applySection();
   }
 
   void _applySection() {

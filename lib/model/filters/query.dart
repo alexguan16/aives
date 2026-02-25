@@ -19,6 +19,7 @@ class QueryFilter extends CollectionFilter {
   final bool colorful, live;
   late final bool aiSearch;
   late final EntryPredicate _test;
+  Completer<Uint8List>? txtEmbedding;
 
   @override
   List<Object?> get props => [query, live, reversed];
@@ -62,12 +63,12 @@ class QueryFilter extends CollectionFilter {
     */
 
     aiSearch = true;
-    final txtEmbedding = Completer<Uint8List>();
-    txtEmbedding.complete(mlService.txtInference(upQuery.trim()));
+    txtEmbedding = Completer<Uint8List>()
+      ..complete(mlService.txtInference(upQuery.trim()));
 
     _test = (entry) {
       if(!entry.isImage && !entry.isVideo) return false;
-      entry.calcSimilarity(txtEmbedding);
+      entry.calcSimilarity(txtEmbedding!);
       return true;
     };
 
