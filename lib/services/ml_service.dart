@@ -3,6 +3,7 @@ import 'package:flutter_embedder/flutter_embedder.dart';
 import 'package:flutter_onnxruntime/flutter_onnxruntime.dart';
 import 'package:path/path.dart' as path;
 import 'package:image/image.dart' as img;
+import 'package:path_provider/path_provider.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -107,33 +108,39 @@ class MlService {
     return o.buffer.asUint8List();
   }
 
-  Future<Uint8List> imgInference(String p) async {
+  Future<Uint8List?> imgInference(String p) async {
     await initialized.future;
 
-    final cmd = img.Command()
-      ..decodeImageFile(p)
-      ..copyResize(width: config['imgSize'], height: config['imgSize'], maintainAspect: true, interpolation: img.Interpolation.cubic)
-      ..convert(numChannels: 3);
-    await cmd.executeThread();
+    try {
+      final cmd = img.Command()
+        ..decodeImageFile(p)
+        ..copyResize(width: config['imgSize'], height: config['imgSize'], maintainAspect: true, interpolation: img.Interpolation.cubic)
+        ..convert(numChannels: 3);
+      await cmd.executeThread();
 
-    var h = (await cmd.getImage())!
-      .getBytes(order: img.ChannelOrder.rgb)
-      .map((i) => i / 255.0)
-      .toList();
-    var j = await OrtValue.fromList(h, [1, (3 * config['imgSize'] * config['imgSize']).toInt()]);
+      var h = (await cmd.getImage())!
+        .getBytes(order: img.ChannelOrder.rgb)
+        .map((i) => i / 255.0)
+        .toList();
+      var j = await OrtValue.fromList(h, [1, (3 * config['imgSize'] * config['imgSize']).toInt()]);
 
-    var k = await j.to(config['visInputDType']);
+      var k = await j.to(config['visInputDType']);
 
-    var y = await visSess.run({visX: k});
-    var l = await y[visY]!.to(OrtDataType.float32);
-    var o = (await l.asList())[0];
+      var y = await visSess.run({visX: k});
+      var l = await y[visY]!.to(OrtDataType.float32);
+      var o = (await l.asList())[0];
 
-    j.dispose();
-    k.dispose();
-    l.dispose();
-    y.forEach((_, v) => v.dispose());
+      j.dispose();
+      k.dispose();
+      l.dispose();
+      y.forEach((_, v) => v.dispose());
 
-    return o.buffer.asUint8List();
+      return o.buffer.asUint8List();
+    } catch(e) {
+      await File(path.join((await getExternalStorageDirectory())!.path, 'log.txt'))
+        .writeAsString('${e}\n', mode: FileMode.append);
+      return null;
+    }
   }
 
   (Float32List, Float32List) convertBlobToList(Uint8List tRaw, Uint8List vRaw) {
