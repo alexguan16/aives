@@ -46,6 +46,8 @@ class CollectionLens with ChangeNotifier {
   Map<SectionKey, List<AvesEntry>> sections = Map.unmodifiable({});
   EntrySortFactor prevSortFactor;
 
+  dynamic token = 0;
+
   CollectionLens({
     required this.source,
     Set<CollectionFilter?>? filters,
@@ -137,6 +139,8 @@ class CollectionLens with ChangeNotifier {
   int get entryCount => _filteredSortedEntries.length;
 
   QueryFilter? get aiFilter => filters.firstWhereOrNull((e) => e is QueryFilter && e.aiSearch) as QueryFilter?;
+
+  bool get searching => token == aiFilter;
 
   // sorted as displayed to the user, i.e. sorted then sectioned, not an absolute order on all entries
   List<AvesEntry>? _sortedEntries;
@@ -275,7 +279,6 @@ class CollectionLens with ChangeNotifier {
   void _applySort() {
     if (fixedSort) return;
 
-    periodicSortTimer?.cancel();
     switch (sortFactor) {
       case EntrySortFactor.date:
         _filteredSortedEntries.sort(AvesEntrySort.compareByDate);
@@ -298,13 +301,18 @@ class CollectionLens with ChangeNotifier {
   }
 
   Future<void> _applyFutureSort() async {
-    final token = aiFilter?.txtEmbedding;
+    while(searching) await Future.delayed(const Duration(milliseconds: 50));
+    await _futureSort();
+  }
+  Future<void> _futureSort() async {
+    token = aiFilter;
     await aiFilter!.txtEmbedding!.future;
     while(_filteredSortedEntries.any((e) => e.txtEmbedding != aiFilter!.txtEmbedding)) {
-      await Future.delayed(const Duration(milliseconds: 200));
-      if(token != aiFilter!.txtEmbedding) return;
+      await Future.delayed(const Duration(milliseconds: 50));
+      if(!searching) return;
     }
     _filteredSortedEntries.sort(AvesEntrySort.compareBySimilarity);
+    token = 0;
     _applySection();
   }
 

@@ -253,6 +253,9 @@ class _CollectionAppBarState extends State<CollectionAppBar> with RouteAware, Si
                             queryNotifier: context.select<Query, ValueNotifier<String>>((query) => query.queryNotifier),
                             focusNode: _queryBarFocusNode,
                           ),
+                        if (context.read<CollectionLens>().searching) const LinearProgressIndicator(
+                          value: null,
+                        ),
                       ],
                     ),
                     transitionKey: isSelecting,
@@ -277,6 +280,9 @@ class _CollectionAppBarState extends State<CollectionAppBar> with RouteAware, Si
     }
     if (context.read<Query>().enabled) {
       height += EntryQueryBar.getPreferredHeight(textScaler);
+    }
+    if (context.read<CollectionLens>().searching) {
+      height += 4;
     }
     return height;
   }
