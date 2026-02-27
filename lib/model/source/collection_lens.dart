@@ -375,7 +375,7 @@ class CollectionLens with ChangeNotifier {
 
   void _onSettingsChanged() {
     final newBurstPatterns = settings.collectionBurstPatterns;
-    final newSortFactor = settings.collectionSortFactor;
+    final newSortFactor = aiFilter != null ? sortFactor : settings.collectionSortFactor;
     final newSectionFactor = settings.collectionSectionFactor;
     final newSortReverse = settings.collectionSortReverse;
 
