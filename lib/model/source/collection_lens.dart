@@ -364,7 +364,7 @@ class CollectionLens with ChangeNotifier {
   void refresh() {
     _applyFilters();
     _applySort();
-    _applySection();
+    if(sortFactor != EntrySortFactor.similarity) _applySection();
   }
 
   void _onFavouritesChanged() {
